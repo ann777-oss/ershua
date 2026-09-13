@@ -64,11 +64,11 @@ export default function StoryDrawer({ open, onClose, readOnly = false }) {
     return () => document.removeEventListener('mouseup', onMouseUp)
   }, [open, readOnly])
 
-  if (!game) return null
-  const charName = chars[activeChar] ? clean(chars[activeChar].profile.name) : ''
-
   // 已取证段落：板上任何卡的锚点段落（划选发证时记录）——有角标，避免重复划选
   const sourcedParas = useMemo(() => new Set(board.flatMap(c => c.paras || [])), [board])
+
+  if (!game) return null
+  const charName = chars[activeChar] ? clean(chars[activeChar].profile.name) : ''
 
   return (
     <div className={`drawer-mask ${open ? 'on' : ''}`} onClick={onClose}>
