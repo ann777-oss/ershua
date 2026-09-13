@@ -19,9 +19,9 @@ Thumbs.db
 # 本机辅助（不入库）
 _pw/
 连接*.cmd
-封面图*.jpeg
+封面图*
 产品封面图*.jpeg
-icon.png
+icon*
 ershua-cloudrun.zip
 
 # 原型与 demo（本机过程产物，不入库）
