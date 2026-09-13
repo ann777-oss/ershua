@@ -9,6 +9,13 @@ export default function SceneLibrary() {
   const loadGame = useGameStore(s => s.loadGame)
   const openPipeline = useGameStore(s => s.openPipeline)
   const enterGame = useGameStore(s => s.enterGame)
+  const auth = useGameStore(s => s.auth)
+  const loginZhihu = useGameStore(s => s.loginZhihu)
+  const logoutZhihu = useGameStore(s => s.logoutZhihu)
+  const myCases = useGameStore(s => s.myCases)
+  const myCasesLoading = useGameStore(s => s.myCasesLoading)
+  const myCasesErr = useGameStore(s => s.myCasesErr)
+  const loadMyCases = useGameStore(s => s.loadMyCases)
   const [stories, setStories] = useState(null)
   const [slots, setSlots] = useState([])
   const [err, setErr] = useState(null)
@@ -25,6 +32,15 @@ export default function SceneLibrary() {
     return () => { alive = false }
   }, [])
 
+  useEffect(() => {
+    if (auth.loggedIn) loadMyCases()
+  }, [auth.loggedIn, loadMyCases])
+
+  const enterStory = story => {
+    if (slots.includes(story.workId)) enterGame(story.workId)
+    else openPipeline(story.workId)
+  }
+
   return (
     <div className="scene on" id="s0">
       <div className="topbar">
@@ -32,10 +48,79 @@ export default function SceneLibrary() {
         <div className="top-actions">
           <div className="chip">主线 · 精调数据层</div>
           <div className="chip">官方故事 · AI 侦探化</div>
+          {auth.configured && !auth.loggedIn && (
+            <button type="button" className="chip auth-chip" onClick={loginZhihu}>知乎登录</button>
+          )}
+          {auth.configured && auth.loggedIn && (
+            <button type="button" className="chip auth-chip" onClick={logoutZhihu}>已登录 · 退出</button>
+          )}
         </div>
       </div>
 
       <div className="lib-body">
+        {auth.loggedIn && (
+          <>
+            <div className="panel-h">我的案源 · 来自你的知乎收藏</div>
+            {myCasesLoading && <div className="lib-note">正在调取你的知乎收藏……</div>}
+            {myCasesErr && (
+              <div className="lib-note err">
+                我的案源调取失败：{myCasesErr}
+                <button className="btn ghost" onClick={loadMyCases}>重试</button>
+              </div>
+            )}
+            {!myCasesLoading && !myCasesErr && myCases && (
+              <>
+                {myCases.matched?.length > 0 && (
+                  <div className="lib-grid">
+                    {myCases.matched.map(item => (
+                      <div className="story-card" key={item.workId} onClick={() => enterStory(item)}>
+                        {item.artwork && <div className="story-cover" style={{ backgroundImage: `url(${item.artwork})` }} />}
+                        <div className="story-info">
+                          <div className="story-title">{item.title}</div>
+                          <div className="story-labels">
+                            {(item.labels || []).slice(0, 3).join(' · ')}
+                            <span className="story-generated">已收藏</span>
+                          </div>
+                          <div className="story-desc">{item.description || '来自你的知乎收藏，可直接进入二刷。'}</div>
+                          <button type="button" className="story-regen" onClick={e => { e.stopPropagation(); enterStory(item) }}>
+                            {slots.includes(item.workId) ? '进入案卷 →' : '侦探化这篇 →'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {myCases.others?.length > 0 && (
+                  <>
+                    <div className="panel-h">收藏中的其他内容（可尝试侦探化）</div>
+                    <div className="lib-grid">
+                      {myCases.others.map(item => (
+                        <div className="story-card" key={`${item.id}-${item.url}`}>
+                          <div className="story-info">
+                            <div className="story-title">{item.title}</div>
+                            <div className="story-labels">{item.contentType || '知乎收藏'}</div>
+                            <div className="story-desc">{item.url || '官方故事库暂未匹配到这条收藏。'}</div>
+                            <button
+                              type="button"
+                              className="story-regen"
+                              disabled={!item.id}
+                              onClick={() => openPipeline(item.id)}>
+                              {item.id ? '尝试侦探化 →' : '缺少故事 ID'}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {!myCases.matched?.length && !myCases.others?.length && (
+                  <div className="lib-note">暂未发现可用案源。先去知乎收藏一篇盐言故事，再回来试试。</div>
+                )}
+              </>
+            )}
+          </>
+        )}
+
         <div className="panel-h">内置主线（人工精调 · 完整三暗线）</div>
         <div className="lib-main" onClick={() => enterGame('main')}>
           <div className="lib-main-info">

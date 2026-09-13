@@ -34,6 +34,12 @@
   transform: rotate(-1.5deg);
 }
 .chip b { font-weight: normal; }
+.auth-chip {
+  font-family: var(--font-body);
+  background: transparent;
+  cursor: pointer;
+}
+.auth-chip:hover { background: rgba(160, 48, 36, .08); }
 
 /* ---- 印章（design.md §7.2「未结」） ---- */
 .seal {
