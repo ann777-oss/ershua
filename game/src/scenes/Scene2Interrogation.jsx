@@ -30,6 +30,7 @@ export default function Scene2Interrogation() {
 
   const [input, setInput] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
   const [hintLoading, setHintLoading] = useState(false)   // 导师便签请求中
   const [mentorClosed, setMentorClosed] = useState(false) // 用户手动收起便签
   const logRef = useRef(null)
@@ -72,6 +73,7 @@ export default function Scene2Interrogation() {
         <div className="t">{game.story.title}<small>审讯室</small></div>
         <div className="top-actions">
           {degraded && <div className="chip degraded">离线剧本模式</div>}
+          <button className="navbtn" onClick={() => setHelpOpen(true)}>玩法说明</button>
           <button className="navbtn" onClick={() => setDrawerOpen(true)}>案卷原文</button>
           <button className="navbtn" onClick={() => setScene('s3')}>证据板（{board.length}）</button>
         </div>
@@ -174,6 +176,22 @@ export default function Scene2Interrogation() {
       </div>
 
       <StoryDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      {helpOpen && (
+        <div className="help-mask" onClick={() => setHelpOpen(false)}>
+          <div className="help-card" onClick={e => e.stopPropagation()}>
+            <button type="button" className="help-close" onClick={() => setHelpOpen(false)}>×</button>
+            <div className="help-stamp">玩法说明</div>
+            <div className="help-title">审讯室怎么查</div>
+            <div className="help-list">
+              <p><b>问人：</b>向当前角色自由提问，追问时间、物品、关系和前后矛盾。</p>
+              <p><b>钉口供：</b>觉得某句可疑，就点回答旁的图钉，把原话放上证据板。</p>
+              <p><b>查原文：</b>打开案卷原文，划选可疑句子，登记成物证。</p>
+              <p><b>拼证据：</b>去证据板点两张卡，找矛盾或印证；链条成立后再发起对峙。</p>
+            </div>
+            <div className="help-foot">卡住时可以点“需要思路？”，但会计入提示使用。</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
