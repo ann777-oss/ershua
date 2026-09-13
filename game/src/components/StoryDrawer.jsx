@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useGameStore } from '../store.js'
 
 // 案卷原文抽屉（design.md §7.9：右侧滑入 380px 纸页 + 荧光笔划选 + 以此为证）
-export default function StoryDrawer({ open, onClose }) {
+export default function StoryDrawer({ open, onClose, readOnly = false }) {
   const game = useGameStore(s => s.game)
   const submitQuote = useGameStore(s => s.submitQuote)
   const judgeBusy = useGameStore(s => s.judgeBusy)
@@ -39,6 +39,7 @@ export default function StoryDrawer({ open, onClose }) {
   // 划选后浮出「以此为证」（anchor/focus 双端点定位段落，起点落在段落外也能工作）
   useEffect(() => {
     if (!open) { setSel(null); return }
+    if (readOnly) return
     const onMouseUp = () => {
       const selection = window.getSelection?.()
       const t = selection?.toString().trim()
@@ -61,7 +62,7 @@ export default function StoryDrawer({ open, onClose }) {
     }
     document.addEventListener('mouseup', onMouseUp)
     return () => document.removeEventListener('mouseup', onMouseUp)
-  }, [open])
+  }, [open, readOnly])
 
   if (!game) return null
   const charName = chars[activeChar] ? clean(chars[activeChar].profile.name) : ''
@@ -75,7 +76,9 @@ export default function StoryDrawer({ open, onClose }) {
         <div className="tex" /> {/* 纸纹覆盖层（multiply 混合，与主舞台一致；不可用 filter 会吞文字） */}
         <div className="drawer-head">
           <span className="drawer-title">案卷原文</span>
-          <span className="drawer-sub">《{game.story.title}》 · 划选可疑句子，以此为证</span>
+          <span className="drawer-sub">
+            《{game.story.title}》 · {readOnly ? '先完整读完，再进入二刷审案' : '划选可疑句子，以此为证'}
+          </span>
           <button className="btn ghost drawer-close" onClick={onClose}>收起</button>
         </div>
         <div className="drawer-body">
@@ -91,7 +94,7 @@ export default function StoryDrawer({ open, onClose }) {
             <p className="para excerpt-note">—— 官方内容接口仅提供正文节选，故事至此中断 ——</p>
           )}
         </div>
-        {sel && (
+        {!readOnly && sel && (
           <button
             className="quote-btn"
             style={{ left: sel.x, top: sel.y }}

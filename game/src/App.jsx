@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useGameStore } from './store.js'
+import SceneTutorial from './scenes/SceneTutorial.jsx'
 import SceneLibrary from './scenes/SceneLibrary.jsx'
 import ScenePipeline from './scenes/ScenePipeline.jsx'
 import SceneOpening from './scenes/SceneOpening.jsx'
@@ -10,7 +11,7 @@ import Scene4Confront from './scenes/Scene4Confront.jsx'
 import Scene5Settle from './scenes/Scene5Settle.jsx'
 import Scene6Share from './scenes/Scene6Share.jsx'
 
-const SCENE_NAMES = { s0: '故事库', pipeline: '叙事流水线', opening: '故事结尾', s1: '案卷页', s2: '审讯室', s3: '证据板', s4: '对峙', s5: '结案', s6: '分享卡' }
+const SCENE_NAMES = { tutorial: '玩法说明', s0: '故事库', pipeline: '叙事流水线', opening: '故事结尾', s1: '案卷页', s2: '审讯室', s3: '证据板', s4: '对峙', s5: '结案', s6: '分享卡' }
 
 export default function App() {
   const game = useGameStore(s => s.game)
@@ -43,6 +44,7 @@ export default function App() {
         <div className="tex" />
         <div className="stain stain-a" />
         <div className="stain stain-b" />
+        {scene === 'tutorial' && <SceneTutorial />}
         {scene === 's0' && <SceneLibrary />}
         {scene === 'pipeline' && <ScenePipeline />}
         {scene === 'opening' && <SceneOpening />}

@@ -42,7 +42,7 @@ export const useGameStore = create((set, get) => ({
   game: null,
   loading: false,
   error: null,
-  scene: 's0',
+  scene: 'tutorial',
   slotId: 'main',
   activeChar: null,
   // ---- P4 流水线 ----
