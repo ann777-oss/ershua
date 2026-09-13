@@ -1,0 +1,35 @@
+# 便携工具链（不入库）
+tools/
+
+# 依赖与构建
+node_modules/
+dist/
+
+# 环境变量（含 API Key，绝不入库）
+.env
+.env.local
+
+# 日志
+*.log
+
+# 系统
+Thumbs.db
+.DS_Store
+
+# 本机辅助（不入库）
+_pw/
+连接*.cmd
+封面图*.jpeg
+产品封面图*.jpeg
+icon.png
+
+# 原型与 demo（本机过程产物，不入库）
+原型/
+demo/
+_shot_protos.py
+
+# 过程文档（不入库）
+故事侦探PRD.docx
+故事侦探PRD生成.py
+知乎产品全景分析报告.docx
+知乎产品全景分析报告生成.py

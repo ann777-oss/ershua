@@ -1,0 +1,29 @@
+{
+  "name": "story-detective",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n vite,server -c cyan,yellow \"vite\" \"nodemon server/index.js\"",
+    "dev:client": "vite",
+    "dev:server": "nodemon server/index.js",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "migrate": "node scripts/migrate_data.js",
+    "preview:prompt": "node eval/run_prompt_preview.js"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "cors": "^2.8.5",
+    "openai": "^4.73.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "concurrently": "^9.1.0",
+    "nodemon": "^3.1.7",
+    "vite": "^5.4.10"
+  }
+}

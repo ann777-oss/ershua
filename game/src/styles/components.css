@@ -1,0 +1,217 @@
+/* ============================================================
+   components.css —— 组件库（design.md §7，类名与规范一致）
+   按钮无圆角无阴影；卡片带图钉与微旋转；红色语义锁定
+   ============================================================ */
+
+/* ---- 按钮（design.md §7.5） ---- */
+.btn {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  letter-spacing: 3px;
+  padding: 8px 20px;
+  border: 1px solid var(--paper-line);
+  background: var(--paper-hi);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn:hover { background: var(--paper-hover); }
+.btn.primary {
+  background: var(--stamp);
+  color: var(--stamp-text);
+  border-color: var(--stamp-dark);
+}
+.btn.primary:hover { background: #8e2a1f; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---- 计数章 / 标签章（design.md §7.1） ---- */
+.chip {
+  font-size: 11px;
+  color: var(--stamp);
+  border: 1.5px solid var(--stamp);
+  padding: 3px 10px;
+  letter-spacing: 2px;
+  transform: rotate(-1.5deg);
+}
+.chip b { font-weight: normal; }
+
+/* ---- 印章（design.md §7.2「未结」） ---- */
+.seal {
+  position: absolute;
+  width: 66px;
+  height: 66px;
+  border: 2.5px solid rgba(160, 48, 36, .55);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(12deg);
+  font-family: var(--font-title);
+  pointer-events: none;
+}
+.seal::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(160, 48, 36, .4);
+  border-radius: 50%;
+}
+.seal span {
+  font-size: 15px;
+  letter-spacing: 3px;
+  color: rgba(160, 48, 36, .62);
+  font-weight: bold;
+  writing-mode: vertical-rl;
+}
+
+/* ---- 人物档案卡（design.md §7.3 证件照简化版） ---- */
+.pcard {
+  background: var(--paper-hi);
+  border: 1px solid var(--paper-line);
+  padding: 12px 14px;
+  position: relative;
+}
+.pcard::before {  /* 顶部红图钉 */
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  margin-left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stamp);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+}
+.pcard .avatar {
+  width: 64px;
+  height: 64px;
+  margin: 4px auto 8px;
+  background: linear-gradient(180deg, #cfc8b8, #948b78); /* 照片底色：单色系做旧 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pcard .nm {
+  font-family: var(--font-title);
+  font-size: 15px;
+  letter-spacing: 4px;
+  text-align: center;
+  color: #4a4132;
+}
+.pcard .rl {
+  font-size: 10.5px;
+  color: var(--ink-faint);
+  text-align: center;
+  letter-spacing: 2px;
+  margin-top: 3px;
+}
+.pcard .ds {
+  font-size: 11px;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  margin-top: 8px;
+}
+
+/* ---- 证据小卡（列表态，design.md §7.7 简化） ---- */
+.evmini {
+  background: var(--paper-hi);
+  border: 1px solid var(--paper-line);
+  padding: 8px 10px;
+  position: relative;
+  font-size: 11.5px;
+  line-height: 1.6;
+  box-shadow: 1px 2px 6px rgba(80, 60, 20, .18);
+}
+.evmini .tag {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #8a7450;
+  margin-bottom: 3px;
+  font-family: var(--font-title);
+}
+.evmini .sub {
+  color: var(--ink-faint);
+  font-size: 10.5px;
+  margin-top: 3px;
+}
+
+/* ---- 证据卡三类（板上钉的完整卡，design.md §7.7；P2 启用） ---- */
+.ecard {
+  background: var(--paper-hi);
+  border: 1px solid var(--paper-line);
+  padding: 10px 12px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  box-shadow: 1px 3px 8px rgba(80, 60, 20, .28);
+  position: relative;
+}
+.ecard::before {  /* 红图钉 */
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  margin-left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stamp);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+}
+.ecard .tag {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #8a7450;
+  margin-bottom: 4px;
+  font-family: var(--font-title);
+}
+.ecard.note { background: #f2e9c9; }        /* 口供便签 */
+
+/* ---- 矛盾章（design.md §7.8；P2 启用） ---- */
+.clash {
+  font-family: var(--font-title);
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--stamp);
+  border: 2.5px solid var(--stamp);
+  padding: 3px 10px;
+  transform: rotate(-4deg);
+  background: rgba(244, 236, 216, .65);
+}
+
+/* ---- 钉住按钮 / 动摇标记（design.md §7.4） ---- */
+.pin-btn {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--stamp);
+  border: 1px solid var(--stamp-soft);
+  padding: 1px 8px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  background: transparent;
+}
+.pin-btn:hover { background: rgba(160, 48, 36, .08); }
+.pin-btn.done { color: var(--ink-faint); border-color: var(--paper-line); cursor: default; }
+
+.shk {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  color: var(--stamp);
+  border: 1.5px solid var(--stamp);
+  padding: 1px 7px;
+  letter-spacing: 2px;
+  transform: rotate(-3deg) translateY(-2px);
+}
+
+/* ---- 楷体小节标题（通用） ---- */
+.panel-h {
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: #4a4132;
+  margin-bottom: 8px;
+}
+
+/* ---- 打字机字体（编号/时间戳） ---- */
+.mono { font-family: var(--font-mono); }
