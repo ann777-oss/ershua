@@ -9,6 +9,8 @@ import { chat, chatStream, llmAvailable, LLMUnavailable } from './llm.js'
 import { fallbackAsk, fallbackShow, fallbackSuggestions } from './fallback.js'
 import { loadSlot, slotExists, listCustomSlots } from './slots.js'
 import { fetchOfficialList, draftFromWorkId, validateDraft, persistSlot } from './pipeline.js'
+import { authRouter } from './auth.js'
+import { myCasesHandler } from './userdata.js'
 
 const app = express()
 app.use(cors())
@@ -41,6 +43,10 @@ app.get('/api/stories', async (_req, res) => {
 
 // 已生成的本地槽位（S0 据此区分「直接进入」与「送去流水线」）
 app.get('/api/slots', (_req, res) => res.json({ slots: listCustomSlots() }))
+
+// ---- 知乎 OAuth 登录 + 我的案源（P6；未配置凭证时 /status 返回 configured:false，前端隐藏入口） ----
+app.use('/api/auth', authRouter)
+app.get('/api/me/cases', myCasesHandler)
 
 // ---- 启动数据：故事、人物公开档案、起手证据、槽位元信息（作者归属） ----
 app.get('/api/game', (req, res) => {
