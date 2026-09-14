@@ -31,6 +31,9 @@
   --font-title: 'KaiTi', 'STKaiti', 'KaiTi_GB2312', serif;
   --font-kai: 'KaiTi', 'STKaiti', 'KaiTi_GB2312', serif;  /* 楷体别名（部分场景沿用 --font-kai 写法） */
   --font-mono: 'Courier New', Courier, monospace;
+
+  /* 舞台整体缩放：基准 980×640，桌面最多放大 14%，窄屏按视口等比缩放 */
+  --stage-scale: min(1.14, calc((100vw - 28px) / 980px), calc((100vh - 36px) / 640px));
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -41,16 +44,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 14px;
+  padding: 18px 14px;
   font-family: var(--font-body);
   color: var(--ink);
 }
 
-/* 窄视口适配（design.md §6.2）：舞台 980px 定宽，视口不足时整体缩放，交互与布局不变 */
+/* 窄视口适配（design.md §6.2）：缩放比例由 --stage-scale 统一控制，交互与布局不变 */
 @media (max-width: 1024px) {
   body { padding: 12px 0; }
-  .stage-wrap, .stage {
-    transform-origin: top center;
-  }
-  .stage { transform: scale(calc(100vw / 1020)); }
 }
