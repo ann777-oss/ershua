@@ -12,15 +12,53 @@ const TOKEN_URL = 'https://openapi.zhihu.com/access_token'
 const APP_ID = process.env.ZHIHU_OAUTH_APP_ID || ''
 const APP_KEY = process.env.ZHIHU_OAUTH_APP_KEY || ''
 
+function cleanRedirectUri(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+  const url = raw.match(/https?:\/\/[^\]\s,}"')]+/)?.[0]
+  return url || raw.replace(/^['"]|['"]$/g, '').trim()
+}
+
 // 回调地址：优先环境变量显式指定；否则按请求 Origin 推导（云托管走 x-forwarded-proto）。
 // 必须与活动页面登记值完全一致（协议/域名/路径，含尾斜杠差异）。
 function redirectUriOf(req) {
-  if (process.env.ZHIHU_OAUTH_REDIRECT_URI) return process.env.ZHIHU_OAUTH_REDIRECT_URI
+  const configured = cleanRedirectUri(process.env.ZHIHU_OAUTH_REDIRECT_URI)
+  if (configured) return configured
   const host = req.headers.host || req.hostname
   const forwardedProto = req.headers['x-forwarded-proto'] || req.headers['x-forwarded-scheme']
   const inferredProto = forwardedProto || (/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? 'http' : 'https')
   const proto = String(inferredProto || req.protocol || 'https').split(',')[0].trim()
   return `${proto}://${host}/api/auth/callback`
+}
+
+function shortHash(value) {
+  return crypto.createHash('sha256').update(String(value || '')).digest('hex').slice(0, 10)
+}
+
+function redirectDiagnostics(req) {
+  const rawEnv = process.env.ZHIHU_OAUTH_REDIRECT_URI || ''
+  const redirectUri = redirectUriOf(req)
+  let parsed = null
+  try {
+    const u = new URL(redirectUri)
+    parsed = {
+      protocol: u.protocol.replace(':', ''),
+      host: u.host,
+      pathname: u.pathname,
+      validHttps: u.protocol === 'https:',
+      expectedPath: u.pathname === '/api/auth/callback'
+    }
+  } catch {
+    parsed = { validHttps: false, expectedPath: false, parseError: true }
+  }
+  return {
+    redirectUri,
+    redirectUriLength: redirectUri.length,
+    redirectUriHash: shortHash(redirectUri),
+    envRedirectUriConfigured: Boolean(rawEnv.trim()),
+    envRedirectUriCleaned: Boolean(rawEnv.trim() && cleanRedirectUri(rawEnv) !== rawEnv.trim()),
+    parsed
+  }
 }
 
 export const oauthConfigured = () => Boolean(APP_ID && APP_KEY)
@@ -139,6 +177,24 @@ authRouter.get('/status', (req, res) => {
     loggedIn: Boolean(s),
     expiresIn: s ? Math.max(0, Math.floor((s.expiresAt - Date.now()) / 1000)) : 0,
     redirectUri: oauthConfigured() ? redirectUriOf(req) : ''
+  })
+})
+
+// 安全诊断：只返回授权参数形态与脱敏指纹，不返回 app_key / token / Access Secret。
+authRouter.get('/diagnostics', (req, res) => {
+  const diag = redirectDiagnostics(req)
+  res.json({
+    configured: oauthConfigured(),
+    appIdConfigured: Boolean(APP_ID),
+    appKeyConfigured: Boolean(APP_KEY),
+    appIdLength: APP_ID.length,
+    appIdHash: APP_ID ? shortHash(APP_ID) : '',
+    ...diag,
+    authorize: {
+      host: new URL(AUTHORIZE_URL).host,
+      responseType: 'code',
+      stateSent: true
+    }
   })
 })
 
