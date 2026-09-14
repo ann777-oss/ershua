@@ -11,6 +11,7 @@ const TOKEN_URL = 'https://openapi.zhihu.com/access_token'
 
 const APP_ID = process.env.ZHIHU_OAUTH_APP_ID || ''
 const APP_KEY = process.env.ZHIHU_OAUTH_APP_KEY || ''
+const STATE_DISABLED_FOR_HACKATHON = process.env.ZHIHU_OAUTH_DISABLE_STATE_FOR_HACKATHON === 'true'
 
 function cleanRedirectUri(value) {
   const raw = String(value || '').trim()
@@ -117,19 +118,27 @@ export const authRouter = express.Router()
 // 登录入口：返回授权页地址（前端整页跳转，用户在知乎页面亲自确认）
 authRouter.get('/url', (_req, res) => {
   if (!oauthConfigured()) return res.status(503).json({ error: '服务端未配置知乎 OAuth 凭证', configured: false })
-  const state = crypto.randomBytes(16).toString('hex')
   sweep()
-  states.set(state, Date.now())
+  const params = { redirect_uri: redirectUriOf(_req), app_id: APP_ID, response_type: 'code' }
+  if (!STATE_DISABLED_FOR_HACKATHON) {
+    const state = crypto.randomBytes(16).toString('hex')
+    states.set(state, Date.now())
+    params.state = state
+  }
   const redirectUri = redirectUriOf(_req)
-  const url = `${AUTHORIZE_URL}?${new URLSearchParams({
-    redirect_uri: redirectUri, app_id: APP_ID, response_type: 'code', state
-  })}`
+  const url = `${AUTHORIZE_URL}?${new URLSearchParams(params)}`
   res.json({ url, redirectUri })
 })
 
 // 知乎授权后的回调：校验 state → 换 token → 建会话 → 回首页
 authRouter.get('/callback', async (req, res) => {
   const code = req.query.authorization_code || req.query.code
+  console.log('[auth] callback received:', {
+    hasAuthorizationCode: Boolean(req.query.authorization_code),
+    hasCode: Boolean(req.query.code),
+    hasState: Boolean(req.query.state),
+    redirectUriHash: shortHash(redirectUriOf(req))
+  })
   if (!code) {
     return res.status(400).send(page('授权失败', '<p>回调里没有授权码，流程终止（未尝试换取 Token）。</p>'))
   }
@@ -158,8 +167,12 @@ authRouter.get('/callback', async (req, res) => {
     const j = await r.json().catch(() => ({}))
     // 成功以响应含 access_token 为准（业务码可能用 20000 表示成功，不作为失败依据）
     if (!r.ok || typeof j.access_token !== 'string' || !j.access_token) {
-      console.error('[auth] token 交换失败：HTTP', r.status)
-      return res.status(502).send(page('登录失败', `<p>换取知乎授权令牌失败（HTTP ${r.status}）。</p>`))
+      console.error('[auth] token 交换失败：', {
+        httpStatus: r.status,
+        code: j.code ?? j.Code ?? null,
+        message: j.message ?? j.Message ?? null
+      })
+      return res.status(502).send(page('登录失败', `<p>换取知乎授权令牌失败（HTTP ${r.status}）。请查看服务端日志中的脱敏错误码。</p>`))
     }
     setUserSession(res, j.access_token, Number(j.expires_in))
     res.redirect('/')
@@ -193,8 +206,9 @@ authRouter.get('/diagnostics', (req, res) => {
     authorize: {
       host: new URL(AUTHORIZE_URL).host,
       responseType: 'code',
-      stateSent: true
-    }
+      stateSent: !STATE_DISABLED_FOR_HACKATHON
+    },
+    stateDisabledForHackathon: STATE_DISABLED_FOR_HACKATHON
   })
 })
 
