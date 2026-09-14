@@ -16,8 +16,10 @@ const APP_KEY = process.env.ZHIHU_OAUTH_APP_KEY || ''
 // 必须与活动页面登记值完全一致（协议/域名/路径，含尾斜杠差异）。
 function redirectUriOf(req) {
   if (process.env.ZHIHU_OAUTH_REDIRECT_URI) return process.env.ZHIHU_OAUTH_REDIRECT_URI
-  const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'http').split(',')[0].trim()
   const host = req.headers.host || req.hostname
+  const forwardedProto = req.headers['x-forwarded-proto'] || req.headers['x-forwarded-scheme']
+  const inferredProto = forwardedProto || (/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? 'http' : 'https')
+  const proto = String(inferredProto || req.protocol || 'https').split(',')[0].trim()
   return `${proto}://${host}/api/auth/callback`
 }
 
@@ -135,7 +137,8 @@ authRouter.get('/status', (req, res) => {
   res.json({
     configured: oauthConfigured(),
     loggedIn: Boolean(s),
-    expiresIn: s ? Math.max(0, Math.floor((s.expiresAt - Date.now()) / 1000)) : 0
+    expiresIn: s ? Math.max(0, Math.floor((s.expiresAt - Date.now()) / 1000)) : 0,
+    redirectUri: oauthConfigured() ? redirectUriOf(req) : ''
   })
 })
 

@@ -13,6 +13,7 @@ import { authRouter } from './auth.js'
 import { myCasesHandler } from './userdata.js'
 
 const app = express()
+app.set('trust proxy', true)
 app.use(cors())
 app.use(express.json({ limit: '2mb' }))
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
