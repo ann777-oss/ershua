@@ -30,6 +30,9 @@ export default function SceneTutorial() {
   const enterGame = useGameStore(s => s.enterGame)
   const game = useGameStore(s => s.game)
   const loading = useGameStore(s => s.loading)
+  const auth = useGameStore(s => s.auth)
+  const loginZhihu = useGameStore(s => s.loginZhihu)
+  const logoutZhihu = useGameStore(s => s.logoutZhihu)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
@@ -38,6 +41,12 @@ export default function SceneTutorial() {
         <div className="t">玩法说明<small>先一刷，再二刷审案</small></div>
         <div className="top-actions">
           <div className="chip">新手引导 · 她从不下厨</div>
+          {auth.configured && !auth.loggedIn && (
+            <button type="button" className="chip auth-chip" onClick={loginZhihu}>知乎登录</button>
+          )}
+          {auth.configured && auth.loggedIn && (
+            <button type="button" className="chip auth-chip" onClick={logoutZhihu}>已登录 · 退出</button>
+          )}
           <button className="navbtn" onClick={() => setScene('s0')}>故事库</button>
         </div>
       </div>
@@ -50,6 +59,14 @@ export default function SceneTutorial() {
             <p>
               《二刷》的玩法建立在“读完之后重审”上：先把原文当作一篇盐言故事读完，再以侦探身份回到故事里，审讯人物、登记证据、拼出一刷时没看见的暗线。
             </p>
+            {auth.configured && (
+              <div className="tutorial-login">
+                <span>{auth.loggedIn ? '已连接知乎账号。故事库会显示来自你收藏的「我的案源」。' : '登录知乎后，可从你的收藏里匹配盐言故事，生成「我的案源」。'}</span>
+                <button type="button" className="btn ghost" onClick={auth.loggedIn ? logoutZhihu : loginZhihu}>
+                  {auth.loggedIn ? '退出登录' : '知乎登录'}
+                </button>
+              </div>
+            )}
           </div>
           <button className="tutorial-read" onClick={() => setDrawerOpen(true)} disabled={!game}>
             先看案卷原文 →
