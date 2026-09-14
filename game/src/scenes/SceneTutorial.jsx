@@ -41,13 +41,6 @@ export default function SceneTutorial() {
         <div className="t">玩法说明<small>先一刷，再二刷审案</small></div>
         <div className="top-actions">
           <div className="chip">新手引导 · 她从不下厨</div>
-          {auth.configured && !auth.loggedIn && (
-            <button type="button" className="chip auth-chip" onClick={loginZhihu}>知乎登录</button>
-          )}
-          {auth.configured && auth.loggedIn && (
-            <button type="button" className="chip auth-chip" onClick={logoutZhihu}>已登录 · 退出</button>
-          )}
-          <button className="navbtn" onClick={() => setScene('s0')}>故事库</button>
         </div>
       </div>
 
