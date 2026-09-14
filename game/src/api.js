@@ -1,9 +1,11 @@
 // 后端 API 封装（vite 代理 /api → localhost:3001）
 async function jsonOrThrow(res) {
   if (!res.ok) {
-    // 仅非 2xx 时容忍无 body 的错误响应
+    // 仅非 2xx 时容忍无 body 的错误响应（status 挂到错误上，调用方可按状态分支）
     const data = await res.json().catch(() => ({}))
-    throw new Error(data.error || `HTTP ${res.status}`)
+    const err = new Error(data.error || `HTTP ${res.status}`)
+    err.status = res.status
+    throw err
   }
   // 2xx 但响应体非法 JSON → 如实抛错，不吞异常
   return res.json()
@@ -14,6 +16,12 @@ const post = (url, body) => fetch(url, {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(body)
 }).then(jsonOrThrow)
+
+// ---- 知乎 OAuth 登录 + 我的案源（P6） ----
+export function authStatus() { return fetch('/api/auth/status').then(jsonOrThrow) }
+export function authLoginUrl() { return fetch('/api/auth/url').then(jsonOrThrow) }
+export function authLogout() { return post('/api/auth/logout', {}) }
+export function fetchMyCases() { return fetch('/api/me/cases').then(jsonOrThrow) }
 
 export function fetchGame(slotId = 'main') {
   return fetch(`/api/game?slot=${encodeURIComponent(slotId)}`).then(jsonOrThrow)

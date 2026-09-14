@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { fetchGame, streamInterrogate, fetchSuggestions, judgeQuote, judgeRelation, confrontCharacter, settleCase } from './api.js'
+import { fetchGame, streamInterrogate, fetchSuggestions, judgeQuote, judgeRelation, confrontCharacter, settleCase, authStatus, authLoginUrl, authLogout, fetchMyCases } from './api.js'
 
 // 客户端游戏状态（服务端无状态；stage/shownEvidence/history 由客户端持有并随请求回传）
 const cleanName = n => n.replace(/[　\s]/g, '')
@@ -48,7 +48,47 @@ export const useGameStore = create((set, get) => ({
   // ---- P4 流水线 ----
   pipelineWorkId: null,  // 待侦探化的官方故事 work_id
   pipelineStartedAt: 0,  // 全流程计时起点（<10min 数据点）
+  // ---- P6 知乎登录 + 我的案源 ----
+  auth: { configured: false, loggedIn: false },
+  myCases: null,
+  myCasesLoading: false,
+  myCasesErr: null,
   ...freshRun(),
+
+  /** 启动静默检查登录态（未配置/失败都不影响游戏主流程） */
+  checkAuth: async () => {
+    try { set({ auth: await authStatus() }) } catch { /* 保持默认未登录 */ }
+  },
+
+  /** 知乎登录：取授权地址整页跳转（用户在知乎页面亲自确认，回调后回首页） */
+  loginZhihu: async () => {
+    try {
+      const r = await authLoginUrl()
+      location.href = r.url
+    } catch (e) {
+      set({ myCasesErr: `登录入口不可用：${e.message}` })
+    }
+  },
+
+  logoutZhihu: async () => {
+    try { await authLogout() } catch { /* 接口失败也本地清态 */ }
+    set({ auth: { ...get().auth, loggedIn: false }, myCases: null, myCasesErr: null })
+  },
+
+  /** 我的案源：收藏 × 故事库交叉匹配（401 时回落未登录态） */
+  loadMyCases: async () => {
+    if (!get().auth.loggedIn || get().myCasesLoading) return
+    set({ myCasesLoading: true, myCasesErr: null })
+    try {
+      set({ myCases: await fetchMyCases(), myCasesLoading: false })
+    } catch (e) {
+      if (e.status === 401) {
+        set({ auth: { ...get().auth, loggedIn: false }, myCases: null, myCasesLoading: false })
+        return
+      }
+      set({ myCasesLoading: false, myCasesErr: e.message })
+    }
+  },
 
   /** 载入故事槽位（main=内置主线；custom/{workId}=流水线产物）；整体重置一局状态。
    *  返回是否成功——竞态守卫：快速连点换故事时，只有最新请求的结果能落地 */

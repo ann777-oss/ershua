@@ -21,9 +21,13 @@ export default function App() {
   const scene = useGameStore(s => s.scene)
   const setScene = useGameStore(s => s.setScene)
   const maybeHint = useGameStore(s => s.maybeHint)
+  const checkAuth = useGameStore(s => s.checkAuth)
 
   // 首次进入：预载主线（故事库直接点主线无需等待）
   useEffect(() => { if (!game && !loading) loadGame('main') }, [game, loading, loadGame])
+
+  // 启动静默检查知乎登录态（P6；失败不打扰主流程）
+  useEffect(() => { checkAuth() }, [checkAuth])
 
   // 浏览器标签页标题随槽位更新（多案件多 tab 可区分）
   useEffect(() => { if (game?.story?.title) document.title = `二刷 · ${game.story.title}` }, [game])
